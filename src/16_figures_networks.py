@@ -85,8 +85,10 @@ def density_grid(scheme, nets, name, lab, title, extra):
             ax.text(0.98, 0.98, f'Δ {r.mean_empirical_minus_null:+.3f}'.replace('-', '−') + '\n' + f'{qtxt} {stars(r.q_fdr)}'.strip(),
                     transform=ax.transAxes, ha='right', va='top', fontsize=11.5, color=INK, linespacing=1.3)
             ax.set_xlabel('PLV' if metric == 'plv' else 'awPLV')
-            ax.set_yticks([])
-            ax.spines[['top', 'right', 'left']].set_visible(False)
+            ax.set_ylabel('Density' if k == 0 else '', fontsize=11)   # full frame, as in the motion figures
+            if k == 1:
+                ax.tick_params(left=False, labelleft=False)
+            ax.tick_params(axis='y', labelsize=10)
         fig.text(inner[0].get_position(fig).x0, inner[0].get_position(fig).y1 + 0.012,
                  label(scheme, net), fontsize=14, fontweight='bold', color=INK)
     summary = len(nets) % ncol_pairs == 1          # an empty slot: use it for a summary of all networks
@@ -106,7 +108,6 @@ def density_grid(scheme, nets, name, lab, title, extra):
         ax.axvline(0, color=GRY, lw=1)
         ax.set_yticks(ys, [label(scheme, n).replace(' network', '').replace(' nuclei', '').replace('-', ' ') for n in nets])
         ax.set_xlabel('Δ, empirical − null mean (95% CI)')
-        ax.spines[['top', 'right']].set_visible(False)
         ax.grid(axis='x', color=GRID)
         fig.text(ax.get_position(fig).x0, ax.get_position(fig).y1 + 0.012, 'Summary: synchrony above chance',
                  fontsize=14, fontweight='bold', color=INK)
