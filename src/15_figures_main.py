@@ -549,17 +549,38 @@ if SEND:
 views = [('lh', 'lateral', 'Left lateral'), ('lh', 'medial', 'Left medial'),
          ('rh', 'medial', 'Right medial'), ('rh', 'lateral', 'Right lateral')]
 if SEND:
-    # one row: title, view labels, brains, legend underneath
-    fig = plt.figure(figsize=(15, 5.0))
-    rlab, img, cmap, lim = rows[0]
-    for j, (h, vw, vlab) in enumerate(views):
-        ax = fig.add_axes([0.025 + j * 0.24, 0.2, 0.23, 0.62], projection='3d')
-        surface_panel(ax, img, h, vw, cmap, lim[0], lim[1], outline_img=None)
-        fig.text(0.14 + j * 0.24, 0.82, vlab, ha='center', fontsize=13, color=SUB, fontweight='bold')
-    names_ = ['Insula', 'Sensorimotor', 'Salience', 'Default mode']   # subcortical nuclei are not on the surface
-    fig.legend([Patch(color=c) for c in SET_COLORS[:4]], names_, loc='lower center', ncol=4, frameon=False, fontsize=13,
-               bbox_to_anchor=(0.5, 0.03))
-    fig.suptitle('Region sets used in the analysis', fontsize=17, fontweight='bold', color=INK, x=0.02, ha='left', y=0.98)
+    # A: the five atlas region sets; B: the eight CONN ICA networks (both are used in the network tables)
+    cimg = nib.load(os.path.join(BASE, 'atlas', 'conn_networks_3mm.nii.gz'))
+    cmask = np.asanyarray(cimg.dataobj) > 0
+    cnames = [l.split('.')[0] for l in open(os.path.join(BASE, 'atlas', 'conn_networks_labels.txt')) if l.strip()]
+    CONN_ORDER = ['DefaultMode', 'SensoriMotor', 'Visual', 'Salience', 'DorsalAttention', 'FrontoParietal', 'Language',
+                  'Cerebellar']
+    CONN_LAB = ['Default mode', 'Sensorimotor', 'Visual', 'Salience', 'Dorsal attention', 'Frontoparietal', 'Language',
+                'Cerebellar (not on surface)']
+    CONN_COLORS = ['#e87ba4', '#2a78d6', '#59a14f', '#eda100', '#76b7b2', '#b07aa1', '#9c755f', '#8a8984']
+    clab = np.zeros(cmask.shape[:3])
+    for j, nm in enumerate(cnames):
+        clab[cmask[..., j] & (clab == 0)] = CONN_ORDER.index(nm) + 1
+    conn_img = nib.Nifti1Image(clab, cimg.affine)
+    panels = [('A', 'Atlas region sets: three functional networks (Yeo), the insula and the subcortical nuclei',
+               rows[0][1], ListedColormap(SET_COLORS), (0.5, 5.5),
+               ['Insula (anatomical)', 'Sensorimotor network', 'Salience network', 'Default-mode network'], SET_COLORS[:4]),
+              ('B', 'CONN ICA-derived networks (32 masks grouped into eight networks)', conn_img,
+               ListedColormap(CONN_COLORS), (0.5, 8.5), CONN_LAB[:7], CONN_COLORS[:7])]   # cerebellum: not on the surface
+    fig = plt.figure(figsize=(15, 9.4))
+    for i, (letter_, ptitle, img, cmap, lim, names_, cols_) in enumerate(panels):
+        y0 = 0.545 - i * 0.47
+        fig.text(0.015, y0 + 0.385, letter_, fontsize=17, fontweight='bold', color=INK)
+        fig.text(0.04, y0 + 0.385, ptitle, fontsize=13.5, fontweight='bold', color=INK)
+        for j, (h, vw, vlab) in enumerate(views):
+            ax = fig.add_axes([0.025 + j * 0.24, y0 + 0.06, 0.23, 0.29], projection='3d')
+            surface_panel(ax, img, h, vw, cmap, lim[0], lim[1], outline_img=None)
+            if i == 0:
+                fig.text(0.14 + j * 0.24, y0 + 0.35, vlab, ha='center', fontsize=12.5, color=SUB, fontweight='bold')
+        fig.legend([Patch(color=c) for c in cols_], names_, loc='lower center', ncol=4, frameon=False,
+                   fontsize=12, bbox_to_anchor=(0.5, y0 - 0.035))
+    fig.suptitle('Regions and networks used in the analysis', fontsize=17, fontweight='bold', color=INK, x=0.02,
+                 ha='left', y=0.995)
     rows = []
 else:
     fig = plt.figure(figsize=(15, 7.6))
@@ -583,9 +604,12 @@ for i, (rlab, img, cmap, lim) in enumerate(rows):
 if not SEND:
     fig.suptitle('Cortical maps of stomach–brain coupling', fontsize=17, fontweight='bold', color=INK, x=0.02,
                  ha='left', y=0.99)
-save(fig, 'fig5_surface', 'Figure 5', 'Region sets on the cortical surface (fsaverage, inflated): insula (Harvard-Oxford), '
-     'sensorimotor, salience and default-mode networks (Schaefer-200 parcels with Yeo-7 labels); the subcortical '
-     'nuclei (Tian S1) are not visible on the cortical surface.') if SEND else save(fig, 'fig5_surface', 'Figure 5',
+save(fig, 'fig5_surface', 'Figure 5', 'Regions and networks used in the analysis, on the inflated fsaverage surface. '
+     '(A) The five atlas region sets: three functional networks (sensorimotor, salience and default mode; Schaefer-200 '
+     'parcels with their Yeo-7 network labels), the insula (Harvard-Oxford, an anatomical region) and the subcortical '
+     'nuclei (Tian scale I, not visible on the cortical surface). (B) The eight CONN networks, derived from group '
+     'independent component analysis and defined by 32 masks; the cerebellar network is not visible on the cortical '
+     'surface. Networks with the same name in A and B are defined differently and are analysed separately.') if SEND else save(fig, 'fig5_surface', 'Figure 5',
      'Cortical surface maps (fsaverage, inflated). (A) The predefined region sets used in the analysis: insula '
      '(Harvard-Oxford), sensorimotor, salience and default-mode networks (Schaefer-200 parcels with Yeo-7 labels); '
      'the subcortical nuclei (Tian S1) are not visible on the cortical surface. (B) Fed minus fasted difference in '
