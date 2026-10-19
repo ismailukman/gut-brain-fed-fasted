@@ -1,0 +1,9 @@
+# participant data and derived outputs are not shared
+data/
+results/
+figures/
+atlas/
+atlas_src/
+__pycache__/
+*.pyc
+.DS_Store
