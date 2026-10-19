@@ -77,6 +77,7 @@ export GUTBFF_BASE=/path/to/project                # data/, atlas_src/; results 
 export GUTBFF_RAW=/path/to/raw                     # start of the relative EGG and motion paths
 export GUTBFF_AFNI_DIR=/path/to/afni_output        # afni_proc output, for 01_inventory_afni.py
 export GUTBFF_GRID_REF=/path/to/one_errts.nii.gz   # defines the 3-mm analysis grid
+export GUTBFF_TEMPLATE=/path/to/MNI152_2009_template.nii.gz   # background for the subcortical slices (Figure 5)
 export FREESURFER_HOME=/path/to/freesurfer
 ```
 

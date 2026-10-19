@@ -74,6 +74,7 @@ def surface_panel(ax, img, hemi, view, cmap='RdBu_r', vmin=-1, vmax=1, outline_i
         rgb[edge] = [0.05, 0.05, 0.05]
     rgb = np.clip(rgb * shade[:, None], 0, 1)
     pc = Poly3DCollection(tri, facecolors=rgb, edgecolors='none', linewidths=0)
+    pc.set_clip_on(False)                          # the 3D axes clip to a square; inflated brains are wider
     ax.add_collection3d(pc)
     lo, hi = inf.min(0), inf.max(0)
     c, r = (lo + hi) / 2, (hi - lo).max() / 2

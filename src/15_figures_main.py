@@ -26,7 +26,7 @@ from scipy import stats
 from surface_render import surface_panel
 from gutsync import REGION_LABELS, TR, TRIM, analytic, bandpass, egg_peak, load_bold, load_egg, plv, store_caption
 
-from config import BASE
+from config import BASE, TEMPLATE
 from config import RAW as ROOT
 RES = os.path.join(BASE, 'results')
 DATA = os.path.join(BASE, 'data')
@@ -567,18 +567,58 @@ if SEND:
                ['Insula (anatomical)', 'Sensorimotor network', 'Salience network', 'Default-mode network'], SET_COLORS[:4]),
               ('B', 'CONN ICA-derived networks (32 masks grouped into eight networks)', conn_img,
                ListedColormap(CONN_COLORS), (0.5, 8.5), CONN_LAB[:7], CONN_COLORS[:7])]   # cerebellum: not on the surface
-    fig = plt.figure(figsize=(15, 9.4))
+    H = 13.6                                      # figure height (inches); rows A and B as before, C below
+    fig = plt.figure(figsize=(15, H))
     for i, (letter_, ptitle, img, cmap, lim, names_, cols_) in enumerate(panels):
-        y0 = 0.545 - i * 0.47
-        fig.text(0.015, y0 + 0.385, letter_, fontsize=17, fontweight='bold', color=INK)
-        fig.text(0.04, y0 + 0.385, ptitle, fontsize=13.5, fontweight='bold', color=INK)
+        b = H - 4.28 - i * 4.42                   # bottom of row i (inches)
+        fig.text(0.015, (b + 3.62) / H, letter_, fontsize=17, fontweight='bold', color=INK)
+        fig.text(0.04, (b + 3.62) / H, ptitle, fontsize=13.5, fontweight='bold', color=INK)
         for j, (h, vw, vlab) in enumerate(views):
-            ax = fig.add_axes([0.025 + j * 0.24, y0 + 0.06, 0.23, 0.29], projection='3d')
+            ax = fig.add_axes([0.025 + j * 0.24, (b + 0.56) / H, 0.23, 2.73 / H], projection='3d')
             surface_panel(ax, img, h, vw, cmap, lim[0], lim[1], outline_img=None)
             if i == 0:
-                fig.text(0.14 + j * 0.24, y0 + 0.35, vlab, ha='center', fontsize=12.5, color=SUB, fontweight='bold')
+                fig.text(0.14 + j * 0.24, (b + 3.29) / H, vlab, ha='center', fontsize=12.5, color=SUB, fontweight='bold')
         fig.legend([Patch(color=c) for c in cols_], names_, loc='lower center', ncol=4, frameon=False,
-                   fontsize=12, bbox_to_anchor=(0.5, y0 - 0.035))
+                   fontsize=12, bbox_to_anchor=(0.5, (b - 0.33) / H))
+    # C: the subcortical nuclei (Tian S1, labels 201-216 in the parcel image) on MNI slices
+    from scipy.ndimage import map_coordinates
+    tmpl = nib.load(TEMPLATE)
+    tvol = np.asanyarray(tmpl.dataobj).astype(float).reshape(tmpl.shape[:3])
+    NUC = ['Hippocampus', 'Amygdala', 'Posterior thalamus', 'Anterior thalamus', 'Nucleus accumbens',
+           'Globus pallidus', 'Putamen', 'Caudate']                  # Tian S1 order, right then left
+    NUC_COLORS = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f', '#edc948', '#b07aa1', '#ff9da7']
+    nuc = np.where(pvol > 200, (pvol - 201) % 8 + 1, 0)
+
+    def mni_slice(axis, at, r1, r2):
+        u, v = np.meshgrid(np.arange(*r1, 0.5), np.arange(*r2, 0.5))   # in-plane MNI coordinates (mm)
+        xyz = [u, v, np.full(u.shape, float(at))] if axis == 'z' else [u, np.full(u.shape, float(at)), v]
+        w = np.stack([*xyz, np.ones(u.shape)]).reshape(4, -1)
+        t = map_coordinates(tvol, (np.linalg.inv(tmpl.affine) @ w)[:3], order=1).reshape(u.shape)
+        lab = map_coordinates(nuc, np.round(np.linalg.inv(pimg.affine) @ w)[:3], order=0).reshape(u.shape)
+        return t, lab
+
+    b = H - 4.28 - 2 * 4.42
+    fig.text(0.015, (b + 3.62) / H, 'C', fontsize=17, fontweight='bold', color=INK)
+    fig.text(0.04, (b + 3.62) / H, 'Subcortical nuclei (Tian scale I, 16 regions), shown on MNI slices',
+             fontsize=13.5, fontweight='bold', color=INK)
+    SLICES = [('z', -18, 'Axial, z = −18 mm'), ('z', 0, 'Axial, z = 0 mm'), ('y', 10, 'Coronal, y = +10 mm'),
+              ('y', -4, 'Coronal, y = −4 mm')]          # together the four slices cross all eight nuclei
+    for j, (axis, at, slab) in enumerate(SLICES):
+        ax = fig.add_axes([0.035 + j * 0.24, (b + 0.5) / H, 0.21, 2.75 / H])
+        r2 = (-48, 34) if axis == 'z' else (-38, 44)
+        t, lab = mni_slice(axis, at, (-48, 48), r2)
+        ext = (-48, 48, r2[0], r2[1])
+        ax.imshow(t, cmap='gray', origin='lower', extent=ext, vmin=np.percentile(t, 2), vmax=np.percentile(t, 99.5))
+        ax.imshow(np.ma.masked_equal(lab, 0), cmap=ListedColormap(NUC_COLORS), vmin=0.5, vmax=8.5, origin='lower',
+                  extent=ext, alpha=0.9, interpolation='nearest')
+        for xx, side, ha in [(-45, 'L', 'left'), (45, 'R', 'right')]:    # +x is the right hemisphere
+            ax.text(xx, r2[1] - 3, side, color='white', fontsize=12, fontweight='bold', va='top', ha=ha)
+        ax.set_title(slab, fontsize=12.5, color=SUB, fontweight='bold')
+        ax.set_xticks([]); ax.set_yticks([])
+        for sp in ax.spines.values():
+            sp.set_visible(False)
+    fig.legend([Patch(color=c) for c in NUC_COLORS], NUC, loc='lower center', ncol=4, frameon=False, fontsize=12,
+               bbox_to_anchor=(0.5, (b - 0.42) / H))
     fig.suptitle('Regions and networks used in the analysis', fontsize=17, fontweight='bold', color=INK, x=0.02,
                  ha='left', y=0.995)
     rows = []
@@ -604,12 +644,15 @@ for i, (rlab, img, cmap, lim) in enumerate(rows):
 if not SEND:
     fig.suptitle('Cortical maps of stomach–brain coupling', fontsize=17, fontweight='bold', color=INK, x=0.02,
                  ha='left', y=0.99)
-save(fig, 'fig5_surface', 'Figure 5', 'Regions and networks used in the analysis, on the inflated fsaverage surface. '
-     '(A) The five atlas region sets: three functional networks (sensorimotor, salience and default mode; Schaefer-200 '
-     'parcels with their Yeo-7 network labels), the insula (Harvard-Oxford, an anatomical region) and the subcortical '
-     'nuclei (Tian scale I, not visible on the cortical surface). (B) The eight CONN networks, derived from group '
-     'independent component analysis and defined by 32 masks; the cerebellar network is not visible on the cortical '
-     'surface. Networks with the same name in A and B are defined differently and are analysed separately.') if SEND else save(fig, 'fig5_surface', 'Figure 5',
+save(fig, 'fig5_surface', 'Figure 5', 'Regions and networks used in the analysis. (A) The five atlas region sets on '
+     'the inflated fsaverage surface. They mix two kinds of region: three functional networks (sensorimotor, salience '
+     'and default mode; Schaefer-200 parcels grouped by their Yeo-7 network labels) and two anatomical structures, the '
+     'insula (Harvard-Oxford) and the subcortical nuclei (Tian scale I), which lie below the cortical surface and are '
+     'shown in C. (B) The eight CONN networks, derived from group independent component analysis and defined by 32 '
+     'masks; the cerebellar network is not visible on the cortical surface. Networks with the same name in A and B are '
+     'defined differently and are analysed separately. (C) The 16 subcortical regions (eight nuclei in each hemisphere) '
+     'on axial and coronal slices of the MNI 2009c template, at the 3-mm resolution used in the analysis; L and R mark '
+     'the left and right hemispheres.') if SEND else save(fig, 'fig5_surface', 'Figure 5',
      'Cortical surface maps (fsaverage, inflated). (A) The predefined region sets used in the analysis: insula '
      '(Harvard-Oxford), sensorimotor, salience and default-mode networks (Schaefer-200 parcels with Yeo-7 labels); '
      'the subcortical nuclei (Tian S1) are not visible on the cortical surface. (B) Fed minus fasted difference in '
