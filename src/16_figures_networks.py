@@ -82,12 +82,34 @@ def density_grid(scheme, nets, name, lab, title, extra):
             qlab = 'q' if pd.notna(r.q_fdr) else 'p'
             qtxt = f'{qlab} < 0.001' if q < 0.001 else f'{qlab} = {q:.3f}'
             ax.set_ylim(0, ax.get_ylim()[1] * 1.22)
-            ax.text(0.98, 0.98, f'{qtxt} {stars(r.q_fdr)}'.strip(), transform=ax.transAxes, ha='right', va='top', fontsize=12, color=INK)
+            ax.text(0.98, 0.98, f'Δ {r.mean_empirical_minus_null:+.3f}'.replace('-', '−') + '\n' + f'{qtxt} {stars(r.q_fdr)}'.strip(),
+                    transform=ax.transAxes, ha='right', va='top', fontsize=11.5, color=INK, linespacing=1.3)
             ax.set_xlabel('PLV' if metric == 'plv' else 'awPLV')
             ax.set_yticks([])
             ax.spines[['top', 'right', 'left']].set_visible(False)
         fig.text(inner[0].get_position(fig).x0, inner[0].get_position(fig).y1 + 0.012,
                  label(scheme, net), fontsize=14, fontweight='bold', color=INK)
+    summary = len(nets) % ncol_pairs == 1          # an empty slot: use it for a summary of all networks
+    if summary:
+        ax = fig.add_subplot(outer[nrow - 1, ncol_pairs - 1])
+        pos = ax.get_position()
+        ax.set_position([pos.x0 + 0.07, pos.y0, pos.width - 0.07, pos.height])
+        ys = np.arange(len(nets))[::-1]
+        for metric, off in (('plv', 0.15), ('awplv', -0.15)):
+            for y, net in zip(ys, nets):
+                g = runs[(runs.scheme == scheme) & (runs.network == net)]
+                d = g.groupby('subject_id')[f'd{metric}'].mean().dropna()
+                m, se = d.mean(), d.std(ddof=1) / np.sqrt(len(d))
+                h = stats.t.ppf(0.975, len(d) - 1) * se
+                ax.plot([m - h, m + h], [y + off] * 2, color=COL[metric], lw=2.4, solid_capstyle='round')
+                ax.plot(m, y + off, 'o', color=COL[metric], ms=7, mec='white', mew=1.2)
+        ax.axvline(0, color=GRY, lw=1)
+        ax.set_yticks(ys, [label(scheme, n).replace(' network', '').replace(' nuclei', '').replace('-', ' ') for n in nets])
+        ax.set_xlabel('Δ, empirical − null mean (95% CI)')
+        ax.spines[['top', 'right']].set_visible(False)
+        ax.grid(axis='x', color=GRID)
+        fig.text(ax.get_position(fig).x0, ax.get_position(fig).y1 + 0.012, 'Summary: synchrony above chance',
+                 fontsize=14, fontweight='bold', color=INK)
     hs = [plt.Rectangle((0, 0), 1, 1, color=COL['plv'], alpha=0.6), plt.Rectangle((0, 0), 1, 1, color=COL['awplv'], alpha=0.6),
           plt.Line2D([], [], color=GRY, ls='--', lw=1.8)]
     fig.legend(hs, ['Empirical PLV', 'Empirical awPLV', 'Null (other participants\' EGG)'], frameon=False, ncol=3,
@@ -97,9 +119,11 @@ def density_grid(scheme, nets, name, lab, title, extra):
          'Gaussian kernel density estimates (smoothed histograms) of synchronization between the gastric rhythm and '
          f'{extra} (all usable runs, 20 participants, both states). Empirical distributions are filled (PLV light blue, awPLV deep blue); '
          'distributions obtained by pairing each run with other participants\' EGG (null) are grey and dashed. Each '
-         'network value is the mean over its regions of interest. q: one-sided Wilcoxon signed-rank test on '
-         'participant means of empirical minus null mean, FDR-corrected across networks; * q < 0.05, ** q < 0.01, '
-         '*** q < 0.001.')
+         'network value is the mean over its regions of interest. Δ: participant mean of empirical minus null mean '
+         '(synchrony above chance). q: one-sided Wilcoxon signed-rank test of Δ against zero, FDR-corrected across '
+         'networks; * q < 0.05, ** q < 0.01, *** q < 0.001.'
+         + (' The last panel summarises Δ for all region sets with 95% confidence intervals across participants '
+            '(PLV light blue, awPLV deep blue).' if len(nets) % 2 == 1 else ''))
 
 
 conn_nets = [n for n in CONN_NAMES if n in set(runs[runs.scheme == 'CONN'].network)]
