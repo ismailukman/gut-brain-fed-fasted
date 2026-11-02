@@ -1,25 +1,17 @@
 # GUT-BFF: stomach-brain phase synchrony in fed and fasted states
 
-![Python](https://img.shields.io/badge/python-3.13-3776AB?logo=python&logoColor=white)
-![Modality](https://img.shields.io/badge/data-EGG%20%2B%20resting--state%20fMRI-6baed6)
-![Preprocessing](https://img.shields.io/badge/preprocessing-AFNI-08306b)
-![Status](https://img.shields.io/badge/status-research%20code-lightgrey)
-
-Analysis code for the Gut-Brain Fed/Fasted (GUT-BFF) study, which compares synchrony between the gastric rhythm,
-recorded with electrogastrography (EGG), and resting-state BOLD fMRI after an overnight fast and after breakfast in
-the same participants.
+Analysis code for the Gut-Brain Fed/Fasted (GUT-BFF) study: phase synchrony between the gastric rhythm
+(electrogastrography, EGG) and resting-state BOLD fMRI, compared after an overnight fast and after breakfast in the
+same participants.
 
 ## Overview
 
-- **Design:** 25 healthy adults, two morning visits in counterbalanced order (fasted, fed), each with two 15-min
-  resting-state runs and concurrent three-channel EGG on a 3T Philips Ingenia Elition scanner.
-- **Synchrony:** phase-locking value (PLV) and amplitude-weighted PLV (awPLV) between the EGG and BOLD signals,
-  both band-passed around each run's EGG peak (about 0.05 Hz).
-- **Chance level:** each run's BOLD signal paired with the EGG of every other participant.
-- **Outcomes:** coupling strength (synchrony above chance in five predefined region sets) and prominence (the share
-  of grey-matter voxels whose PLV exceeds the 95th percentile of their own chance distribution).
-- **Statistics:** linear mixed models with run, session order and head motion, checked with participant
-  fixed-effects models; FDR correction across regions and networks; permutation tests for whole-brain maps.
+- **Design:** 25 healthy adults, fasted and fed morning visits in counterbalanced order, two 15-min runs per visit
+  with concurrent EGG.
+- **Measure:** phase-locking value (PLV) between the EGG and each grey-matter voxel; chance from pairing each run with
+  the other participants' EGG.
+- **Outcome:** the fraction of grey-matter voxels above their own chance threshold, compared between visits with
+  linear mixed models.
 
 The data are not included in this repository.
 
@@ -28,7 +20,7 @@ The data are not included in this repository.
 ```
 atlas/                      one subfolder per source atlas (files not included; see the README in each)
   schaefer2018/ tian2020/ harvard_oxford/ conn_networks/ rebollo2018/
-figures/abstract/           Figures 1 and 2 of the abstract
+figures/abstract/           Figures 1 and 2 of the abstract (PNG)
 src/
   config.py                 paths (set with environment variables)
   gutsync.py                filtering, Hilbert transform, PLV, model fitting
@@ -103,24 +95,6 @@ Run the scripts in `src/` in numerical order, for example `python src/02_synchro
 
 Tables are written to `results/` (CSV) and figures to `figures/` (abstract figures to `figures/abstract/`). Each
 figure is saved with and without its caption.
-
-## Figures
-
-**Figure 1.** Design and analysis. (A) Fasted and fed morning visits in counterbalanced order, each with a blood
-glucose test and two 15-min resting-state fMRI runs with EGG. (B) The EGG is band-pass filtered at its gastric peak
-(f0 ± 0.015 Hz), each grey-matter voxel's BOLD signal in the same band, and the phase-locking value (PLV) is computed
-from Hilbert phases. (C) A voxel is synchronized when its PLV with the same-run EGG exceeds the 95th percentile of its
-PLVs with other participants' EGG.
-
-![Figure 1](figures/abstract/figure1_methods.png)
-
-**Figure 2.** Fasted and fed visits in the 15 participants with usable EGG at both visits (28 fasted and 27 fed runs).
-(A) Blood glucose in the 13 with values at both visits (Wilcoxon test). (B) Fraction of grey-matter voxels with gastric
-synchronization; dashed line, chance (about 6.5%). Change and P from a linear mixed model using all runs. Points,
-participant means; lines join each participant (orange, higher when fed; blue, lower; grey, unchanged); white
-circles, mean and 95% CI.
-
-![Figure 2](figures/abstract/figure2_results.png)
 
 ## References
 
