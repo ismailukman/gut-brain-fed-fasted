@@ -1,9 +1,21 @@
 # participant data and derived outputs are not shared
 data/
 results/
-figures/
-atlas/
-atlas_src/
+
+# atlases: only the folder layout is shared; the source files go in each subfolder (see its README),
+# and 01_build_atlas.py writes the 3-mm atlases to atlas/
+atlas/*
+!atlas/*/
+atlas/*/*
+!atlas/*/README.md
+
+# figures: only the two abstract figures are shared
+figures/*
+!figures/abstract/
+figures/abstract/*
+!figures/abstract/figure1_methods.png
+!figures/abstract/figure2_results.png
+
 __pycache__/
 *.pyc
 .DS_Store

@@ -3,7 +3,7 @@ Paths used by all scripts. Set them with environment variables; the defaults sui
 
   GUTBFF_BASE        project folder with data/, atlas/, results/ and figures/ (default: the repository folder)
   GUTBFF_RAW         folder that the relative EGG and motion paths in data/*.csv start from (default: GUTBFF_BASE)
-  GUTBFF_ATLAS_SRC   folder with the source atlases (used by 01_build_atlas.py)
+  GUTBFF_ATLAS_SRC   folder with one subfolder per source atlas (default: atlas/; used by 01_build_atlas.py)
   GUTBFF_GRID_REF    one preprocessed BOLD file that defines the analysis grid (used by 01_build_atlas.py)
   GUTBFF_TEMPLATE    MNI 2009c T1 template, background for the brain slices in Figure 1
                      (default: AFNI's MNI152_2009_template.nii.gz in ~/abin)
@@ -13,6 +13,6 @@ import os
 HERE = os.path.dirname(os.path.abspath(__file__))
 BASE = os.path.abspath(os.environ.get('GUTBFF_BASE', os.path.join(HERE, '..')))
 RAW = os.path.abspath(os.environ.get('GUTBFF_RAW', BASE))
-ATLAS_SRC = os.environ.get('GUTBFF_ATLAS_SRC', os.path.join(BASE, 'atlas_src'))
+ATLAS_SRC = os.environ.get('GUTBFF_ATLAS_SRC', os.path.join(BASE, 'atlas'))
 GRID_REF = os.environ.get('GUTBFF_GRID_REF', '')
 TEMPLATE = os.environ.get('GUTBFF_TEMPLATE', os.path.expanduser('~/abin/MNI152_2009_template.nii.gz'))

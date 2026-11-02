@@ -8,6 +8,7 @@ Resample the atlases to the BOLD grid (MNI 2009c, 3 mm) and define the five netw
   5 subcortical   Tian S1 (16 regions)
 Also: Schaefer-200 + Tian S1 parcels (216), the Rebollo et al. (2018) gastric network
 (NeuroVault image 51888) and the 32 CONN network masks.
+Inputs: the source atlases in atlas/<name>/ (see the README in each subfolder)
 Outputs: atlas/*_3mm.nii.gz and label files
 
 Usage: python 01_build_atlas.py
@@ -39,14 +40,14 @@ def resample_nn(src_img, ref_shape, ref_affine):
 ref = nib.load(GRID_REF)
 shape, aff = ref.shape[:3], ref.affine
 
-schaefer = resample_nn(nib.load(os.path.join(ATLAS_SRC, 'Schaefer2018_200Parcels_7Networks_order_FSLMNI152_1mm.nii.gz')), shape, aff).astype(int)
-tian = resample_nn(nib.load(os.path.join(ATLAS_SRC, 'Tian_Subcortex_S1_3T_2009cAsym.nii.gz')), shape, aff).astype(int)
-ho = resample_nn(nib.load(os.path.join(ATLAS_SRC, 'atlas.nii')), shape, aff).astype(int)
-rebollo = resample_nn(nib.load(os.path.join(ATLAS_SRC, 'rebollo2018_gastric_network_mask.nii.gz')),
+schaefer = resample_nn(nib.load(os.path.join(ATLAS_SRC, 'schaefer2018', 'Schaefer2018_200Parcels_7Networks_order_FSLMNI152_1mm.nii.gz')), shape, aff).astype(int)
+tian = resample_nn(nib.load(os.path.join(ATLAS_SRC, 'tian2020', 'Tian_Subcortex_S1_3T_2009cAsym.nii.gz')), shape, aff).astype(int)
+ho = resample_nn(nib.load(os.path.join(ATLAS_SRC, 'harvard_oxford', 'atlas.nii')), shape, aff).astype(int)
+rebollo = resample_nn(nib.load(os.path.join(ATLAS_SRC, 'rebollo2018', 'rebollo2018_gastric_network_mask.nii.gz')),
                       shape, aff) > 0
 
 labels = {}
-for line in open(os.path.join(ATLAS_SRC, 'Schaefer2018_200Parcels_7Networks_order.txt')):
+for line in open(os.path.join(ATLAS_SRC, 'schaefer2018', 'Schaefer2018_200Parcels_7Networks_order.txt')):
     parts = line.split()
     labels[int(parts[0])] = parts[1]
 net_of = {k: v.split('_')[2] for k, v in labels.items()}   # e.g. SomMot
@@ -62,11 +63,11 @@ for code, net in ((2, 'SomMot'), (3, 'SalVentAttn'), (4, 'Default')):
 family[insula & (tian == 0)] = 1
 family[tian > 0] = 5
 
-conn_img = nib.load(os.path.join(ATLAS_SRC, 'networks.nii'))
+conn_img = nib.load(os.path.join(ATLAS_SRC, 'conn_networks', 'networks.nii'))
 conn = np.stack([resample_nn(nib.Nifti1Image(np.asanyarray(conn_img.dataobj)[..., i], conn_img.affine), shape, aff)
                  for i in range(conn_img.shape[-1])], -1).astype(np.int16)
 conn_names = [l.split(' (')[0].strip() if l.count('(') == 1 else l.rsplit(' (', 1)[0].strip()
-              for l in open(os.path.join(ATLAS_SRC, 'networks.txt')) if l.strip()]
+              for l in open(os.path.join(ATLAS_SRC, 'conn_networks', 'networks.txt')) if l.strip()]
 
 os.makedirs(OUT, exist_ok=True)
 nib.save(nib.Nifti1Image(conn, aff), os.path.join(OUT, 'conn_networks_3mm.nii.gz'))

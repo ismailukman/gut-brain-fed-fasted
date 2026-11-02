@@ -26,6 +26,9 @@ The data are not included in this repository.
 ## Repository layout
 
 ```
+atlas/                      one subfolder per source atlas (files not included; see the README in each)
+  schaefer2018/ tian2020/ harvard_oxford/ conn_networks/ rebollo2018/
+figures/abstract/           Figures 1 and 2 of the abstract
 src/
   config.py                 paths (set with environment variables)
   gutsync.py                filtering, Hilbert transform, PLV, model fitting
@@ -57,23 +60,23 @@ Place these in the project folder (`GUTBFF_BASE`, by default the repository fold
 | `data/gutbff_analysis_manifest.csv` | one row per run: participant, visit, state, run, EGG review result, analysis set, path to the preprocessed BOLD file (`bold_file`) and to the filtered EGG (`egg_filtered_file`) |
 | `data/gutbff_runs.csv` | one row per run: session order, EGG peak frequency and quality, mean framewise displacement, censoring, glucose, path to the AFNI motion parameters (`motion_file`) |
 | `data/gutbff_subjects.csv` | one row per participant: analysis set, session order, age, sex, BMI, glucose at each visit, days between visits |
-| `atlas_src/` | source atlases for `01_build_atlas.py` (below) |
+| `atlas/<name>/` | source atlases for `01_build_atlas.py` (below) |
 
 EGG and motion paths in the tables are relative to `GUTBFF_RAW`. Each filtered EGG (`gast_data_*.npy`, 10 Hz) is
 stored with its filter frequency (`max_freq*.npy`) in the same folder.
 
-| Atlas file (`atlas_src/`) | Source |
+| Folder and files | Source |
 |---|---|
-| `Schaefer2018_200Parcels_7Networks_order_FSLMNI152_1mm.nii.gz`, `Schaefer2018_200Parcels_7Networks_order.txt` | Schaefer et al. (2018), CBIG repository |
-| `Tian_Subcortex_S1_3T_2009cAsym.nii.gz` | Tian et al. (2020), Melbourne Subcortex Atlas |
-| `atlas.nii` | Harvard-Oxford atlas as distributed with the CONN toolbox (insula labels 3 and 4) |
-| `networks.nii`, `networks.txt` | CONN toolbox network masks (32 ROIs, 8 networks) |
-| `rebollo2018_gastric_network_mask.nii.gz` | Rebollo et al. (2018), NeuroVault image 51888 |
+| `schaefer2018/`: `Schaefer2018_200Parcels_7Networks_order_FSLMNI152_1mm.nii.gz`, `Schaefer2018_200Parcels_7Networks_order.txt` | Schaefer et al. (2018), CBIG repository |
+| `tian2020/`: `Tian_Subcortex_S1_3T_2009cAsym.nii.gz` | Tian et al. (2020), Melbourne Subcortex Atlas |
+| `harvard_oxford/`: `atlas.nii` | Harvard-Oxford atlas as distributed with the CONN toolbox (insula labels 3 and 4) |
+| `conn_networks/`: `networks.nii`, `networks.txt` | CONN toolbox network masks (32 ROIs, 8 networks) |
+| `rebollo2018/`: `rebollo2018_gastric_network_mask.nii.gz` | Rebollo et al. (2018), NeuroVault image 51888 |
 
 ## Configuration
 
 ```
-export GUTBFF_BASE=/path/to/project                # data/, atlas_src/; results and figures are written here
+export GUTBFF_BASE=/path/to/project                # data/ and atlas/; results and figures are written here
 export GUTBFF_RAW=/path/to/raw                     # start of the relative EGG and motion paths
 export GUTBFF_GRID_REF=/path/to/one_errts.nii.gz   # defines the 3-mm analysis grid
 export GUTBFF_TEMPLATE=/path/to/MNI152_2009_template.nii.gz   # background for the brain slices (Figure 1)
@@ -100,6 +103,24 @@ Run the scripts in `src/` in numerical order, for example `python src/02_synchro
 
 Tables are written to `results/` (CSV) and figures to `figures/` (abstract figures to `figures/abstract/`). Each
 figure is saved with and without its caption.
+
+## Figures
+
+**Figure 1.** Design and analysis. (A) Fasted and fed morning visits in counterbalanced order, each with a blood
+glucose test and two 15-min resting-state fMRI runs with EGG. (B) The EGG is band-pass filtered at its gastric peak
+(f0 ± 0.015 Hz), each grey-matter voxel's BOLD signal in the same band, and the phase-locking value (PLV) is computed
+from Hilbert phases. (C) A voxel is synchronized when its PLV with the same-run EGG exceeds the 95th percentile of its
+PLVs with other participants' EGG.
+
+![Figure 1](figures/abstract/figure1_methods.png)
+
+**Figure 2.** Fasted and fed visits in the 15 participants with usable EGG at both visits (28 fasted and 27 fed runs).
+(A) Blood glucose in the 13 with values at both visits (Wilcoxon test). (B) Fraction of grey-matter voxels with gastric
+synchronization; dashed line, chance (about 6.5%). Change and P from a linear mixed model using all runs. Points,
+participant means; lines join each participant (orange, higher when fed; blue, lower; grey, unchanged); white
+circles, mean and 95% CI.
+
+![Figure 2](figures/abstract/figure2_results.png)
 
 ## References
 
