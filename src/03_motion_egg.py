@@ -16,7 +16,7 @@ Outputs: results/aim2_motion_egg_control.csv (population and state tests), resul
          results/motion/population_level_gutbff.csv and motion_summary_gutbff.csv,
          results/motion/population_level_gutbff_{fasted,fed}.csv, results/aim2_motion_egg_by_state.csv,
          figures/v2/fig9_motion_egg.png (both states), fig10_motion_egg_fasted.png, fig11_motion_egg_fed.png
-Usage: python 10_motion_egg.py
+Usage: python 03_motion_egg.py
 """
 import os
 import textwrap
@@ -27,7 +27,6 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import statsmodels.formula.api as smf
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
 

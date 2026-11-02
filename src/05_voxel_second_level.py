@@ -8,7 +8,7 @@ Inference: sign-flip permutation (10,000) of the one-sample t, family-wise error
 maximum statistic across voxels (as FSL randomise without TFCE). p = (1 + count) / (1 + n_perm).
 
 Outputs: results/voxel_<test>_t.nii.gz, results/voxel_<test>_pfwe.nii.gz, results/voxel_second_level.csv
-Usage: python 07_voxel_second_level.py
+Usage: python 05_voxel_second_level.py
 """
 import os
 

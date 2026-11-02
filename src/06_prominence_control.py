@@ -9,7 +9,7 @@ should show no difference if the real effect reflects synchrony rather than prop
 Also saved: per-voxel null mean minus median, averaged within each family (bias of voxel dPLV under the null).
 
 Output: results/synchrony/prominence_control_runs.csv
-Usage: python 08_prominence_control.py
+Usage: python 06_prominence_control.py
 """
 import os
 import time
@@ -30,7 +30,7 @@ family = np.asanyarray(nib.load(os.path.join(BASE, 'atlas', 'families_3mm.nii.gz
 parcels = np.asanyarray(nib.load(os.path.join(BASE, 'atlas', 'parcels216_3mm.nii.gz')).dataobj).astype(int)
 rebollo = np.asanyarray(nib.load(os.path.join(BASE, 'atlas', 'rebollo2018_3mm.nii.gz')).dataobj) > 0
 conn = np.asanyarray(nib.load(os.path.join(BASE, 'atlas', 'conn_networks_3mm.nii.gz')).dataobj) > 0
-gm = (parcels > 0) | rebollo | conn.any(-1)                 # same voxel set as 05_synchrony.py
+gm = (parcels > 0) | rebollo | conn.any(-1)                 # same voxel set as 02_synchrony.py
 gm_idx = np.flatnonzero(gm.ravel())
 vox_family = family.ravel()[gm_idx]
 

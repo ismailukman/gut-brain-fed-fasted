@@ -2,14 +2,14 @@
 Voxel and region-set EGG-BOLD synchrony with both metrics, PLV and amplitude-weighted PLV (awPLV), each expressed
 as empirical minus the mean of the mismatched-participant null (unbiased under the null, unlike the median).
 
-Per run (same signals as 05_synchrony.py: errts, EGG on the TR grid, band-pass at the EGG peak +/- 0.015 Hz, 15 TRs
+Per run (same signals as 02_synchrony.py: errts, EGG on the TR grid, band-pass at the EGG peak +/- 0.015 Hz, 15 TRs
 trimmed at each end; null = every passing EGG run of the other participants):
   maps     results/synchrony/maps_v2/<imaging_id>_run<r>_{plv,awplv}_dmean.nii.gz
   regions  results/synchrony/region_plv_awplv_runs.csv: for the five region sets, the Rebollo 2018 regions and all
            grey matter, the metric of the region mean time course, the mean of voxel values, and prominence
            (fraction of voxels above their own null 95th percentile), for PLV and awPLV
 
-Usage: python 12_voxel_maps_plv_awplv.py
+Usage: python 08_voxel_maps_plv_awplv.py
 """
 import os
 import time

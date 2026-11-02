@@ -7,7 +7,7 @@ Section 2: network-average dPLV, awPLV, prominence, CONN networks, sensitivity a
 Section 3: per-family models (BH-FDR), state x family test, Rebollo 2018 region and Dice overlap.
 Outputs: results/aim2_*.csv, results/aim3_*.csv, results/aim2_aim3_summary.txt, group t-maps
 
-Usage: python 06_primary_and_localization.py
+Usage: python 04_primary_and_localization.py
 """
 import glob
 import os

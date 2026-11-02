@@ -10,8 +10,8 @@ gives network time courses and maps.
 Outputs (results/synchrony/): family_runs.csv, parcel_runs.csv, conn_dualreg_runs.csv,
          maps/<imaging_id>_run<r>_dplv.nii.gz (PLV minus null median)
 
-Usage: python 05_synchrony.py            all passing runs
-       python 05_synchrony.py --test 01  one subject, with checks
+Usage: python 02_synchrony.py            all passing runs
+       python 02_synchrony.py --test 01  one subject, with checks
 """
 import argparse
 import os

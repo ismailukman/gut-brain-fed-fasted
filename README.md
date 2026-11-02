@@ -29,13 +29,11 @@ The data are not included in this repository.
 src/
   config.py                 paths (set with environment variables)
   gutsync.py                filtering, Hilbert transform, PLV, model fitting
-  surface_render.py         cortical surface figures
-  01-02                     preprocessing inventory and data-quality metrics
-  03                        atlases and region sets
-  04                        state manipulation and data quality
-  05-09                     synchrony, primary models, whole-brain tests, controls, glucose, reliability
-  10-14                     head motion, network-level synchrony, both metrics, follow-up analyses
-  15-18                     figures
+  01                        atlases and region sets
+  02-04                     synchrony, EGG-head motion synchrony, primary models
+  05-07                     whole-brain test, chance level of prominence, glucose and reliability
+  08-11                     voxel maps, threshold-free score, estimated synchronized fraction
+  12-13                     abstract figures
 ```
 
 ## Installation
@@ -46,7 +44,9 @@ cd gut-brain-fed-fasted
 pip install -r requirements.txt
 ```
 
-AFNI preprocessing (`afni_proc.py`) is run beforehand; FreeSurfer's `fsaverage5` is used only for the surface figures.
+AFNI preprocessing (`afni_proc.py`) is run beforehand.
+Figure 1 of the abstract (`13_figure1_methods.py`) also needs `tectonic` and `pdftoppm` (poppler), and the example
+run it shows is read from the raw BIOPAC recording with `bioread`.
 
 ## Inputs
 
@@ -57,7 +57,7 @@ Place these in the project folder (`GUTBFF_BASE`, by default the repository fold
 | `data/gutbff_analysis_manifest.csv` | one row per run: participant, visit, state, run, EGG review result, analysis set, path to the preprocessed BOLD file (`bold_file`) and to the filtered EGG (`egg_filtered_file`) |
 | `data/gutbff_runs.csv` | one row per run: session order, EGG peak frequency and quality, mean framewise displacement, censoring, glucose, path to the AFNI motion parameters (`motion_file`) |
 | `data/gutbff_subjects.csv` | one row per participant: analysis set, session order, age, sex, BMI, glucose at each visit, days between visits |
-| `atlas_src/` | source atlases for `03_build_atlas.py` (below) |
+| `atlas_src/` | source atlases for `01_build_atlas.py` (below) |
 
 EGG and motion paths in the tables are relative to `GUTBFF_RAW`. Each filtered EGG (`gast_data_*.npy`, 10 Hz) is
 stored with its filter frequency (`max_freq*.npy`) in the same folder.
@@ -75,38 +75,35 @@ stored with its filter frequency (`max_freq*.npy`) in the same folder.
 ```
 export GUTBFF_BASE=/path/to/project                # data/, atlas_src/; results and figures are written here
 export GUTBFF_RAW=/path/to/raw                     # start of the relative EGG and motion paths
-export GUTBFF_AFNI_DIR=/path/to/afni_output        # afni_proc output, for 01_inventory_afni.py
 export GUTBFF_GRID_REF=/path/to/one_errts.nii.gz   # defines the 3-mm analysis grid
-export GUTBFF_TEMPLATE=/path/to/MNI152_2009_template.nii.gz   # background for the subcortical slices (Figure 5)
-export FREESURFER_HOME=/path/to/freesurfer
+export GUTBFF_TEMPLATE=/path/to/MNI152_2009_template.nii.gz   # background for the brain slices (Figure 1)
 ```
 
 ## Running
 
-Run the scripts in `src/` in numerical order, for example `python src/05_synchrony.py`.
+Run the scripts in `src/` in numerical order, for example `python src/02_synchrony.py`.
 
 | Script | Purpose |
 |---|---|
-| `01_inventory_afni.py`, `02_nuisance_metrics.py` | Preprocessing outputs; censoring, global correlation and temporal SNR per run |
-| `03_build_atlas.py` | Resample atlases to the BOLD grid; define the five region sets |
-| `04_state_and_quality.py` | Glucose, EGG usability and data quality, fed vs fasted |
-| `05_synchrony.py` | PLV and awPLV per region set, parcel and voxel, with the chance level (slow: reads every BOLD run) |
-| `06_primary_and_localization.py` | Coupling strength and prominence models, sensitivity analyses, region sets, overlap with Rebollo et al. (2018) |
-| `07_voxel_second_level.py` | Whole-brain voxel-wise sign-flip permutation test |
-| `08_prominence_control.py` | Chance level of prominence from mismatched EGGs (slow) |
-| `09_control_glucose_reliability.py` | Prominence control statistics, glucose models, reliability (ICC) |
-| `10_motion_egg.py` | Synchrony between the EGG and head motion, by state |
-| `11_network_synchrony.py` | Network-level synchrony for CONN networks and region sets (slow; `--stats-only` reuses saved values) |
-| `12_voxel_maps_plv_awplv.py` | Voxel maps of PLV and awPLV minus the chance mean (slow) |
-| `13_primary_plv_awplv.py` | Primary outcomes with both metrics |
-| `14_followups.py` | Cluster-based whole-brain test and comparison of region summaries (exploratory) |
-| `15`–`18_figures_*.py` | Figures; set `GUTBFF_SEND=1` for the version without the Rebollo regions |
+| `01_build_atlas.py` | Resample atlases to the BOLD grid; define the five region sets |
+| `02_synchrony.py` | PLV and awPLV per region set, parcel and voxel, with the chance level (slow: reads every BOLD run) |
+| `03_motion_egg.py` | Synchrony between the EGG and head motion, by state (a covariate in one sensitivity analysis) |
+| `04_primary_and_localization.py` | Coupling strength and prominence models, sensitivity analyses, region sets, overlap with Rebollo et al. (2018) |
+| `05_voxel_second_level.py` | Whole-brain voxel-wise sign-flip permutation test |
+| `06_prominence_control.py` | Chance level of prominence from mismatched EGGs (slow) |
+| `07_control_glucose_reliability.py` | Prominence control statistics, glucose models, reliability (ICC) |
+| `08_voxel_maps_plv_awplv.py` | Voxel maps of PLV and awPLV minus the chance mean (slow) |
+| `09_threshold_free_prominence.py` | Threshold-free score: mean share of chance values each voxel's PLV exceeds (slow) |
+| `10_voxel_score_maps.py` | Voxel maps of the threshold-free score (slow) |
+| `11_true_fraction.py` | Estimated fraction of synchronized voxels from the distribution of voxel scores (Storey's method) |
+| `12_figures_abstract.py`, `13_figure1_methods.py` | Abstract Figures 2 and 1 |
 
-Tables are written to `results/` (CSV) and figures to `figures/v2/` (or `figures/send/`). Each figure is saved with
-and without its caption.
+Tables are written to `results/` (CSV) and figures to `figures/` (abstract figures to `figures/abstract/`). Each
+figure is saved with and without its caption.
 
 ## References
 
 - Rebollo I, et al. Stomach-brain synchrony reveals a novel, delayed-connectivity resting-state network in humans. *eLife* 2018;7:e33321.
 - Choe AS, et al. Phase-locking of resting-state brain networks with the gastric basal electrical rhythm. *PLoS One* 2021;16:e0244756.
 - Levakov G, Ganor S, Avidan G. Reliability and validity of brain-gastric phase synchronization. *Hum Brain Mapp* 2023;44:4956-4966.
+- Storey JD, Tibshirani R. Statistical significance for genomewide studies. *Proc Natl Acad Sci USA* 2003;100:9440-9445.

@@ -2,7 +2,7 @@
 Follow-up analyses: prominence control, metabolic measures and reliability.
 
 The voxel-averaged values (mean over voxels of the run's dPLV map within each region set) are used as an outcome
-in the glucose and reliability analyses; their fed vs fasted and above-chance tests are in 14_followups.py.
+in the glucose and reliability analyses.
 
 1  Glucose (H3), paired set with glucose available:
      state-only:     y ~ fed + run2 + fed_first + FD + (1 | subject)
@@ -13,11 +13,11 @@ in the glucose and reliability analyses; their fed vs fasted and above-chance te
 2  Reliability (same people measured twice). Run 1 vs run 2 within each state: ICC(2,1) absolute agreement
    (test-retest) and ICC(3,1) consistency. Fasted vs fed participant means: ICC(3,1) consistency (the state shift
    is expected) and Spearman rho. F-based 95% CIs (Shrout & Fleiss 1979; McGraw & Wong 1996).
-3  Prominence control (08_prominence_control.py): chance level per run from mismatched EGGs; fed vs fasted on the
+3  Prominence control (06_prominence_control.py): chance level per run from mismatched EGGs; fed vs fasted on the
    control and on real minus control.
 
 Outputs: results/followup_*.csv, results/followup_summary.txt
-Usage: python 09_control_glucose_reliability.py
+Usage: python 07_control_glucose_reliability.py
 """
 import os
 import warnings
@@ -134,7 +134,7 @@ if os.path.exists(CTRL):
     log('Null bias of voxel dPLV (mean - median of null PLV, averaged over voxels and runs):')
     log(bias.round(4).to_string())
 else:
-    log('prominence_control_runs.csv not found; run 08_prominence_control.py')
+    log('prominence_control_runs.csv not found; run 06_prominence_control.py')
 pd.DataFrame(ctrl_rows).to_csv(os.path.join(RES, 'followup_prominence_control.csv'), index=False)
 
 # ------------------------------------------------------------------ 2 glucose (H3)

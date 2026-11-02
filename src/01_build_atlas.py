@@ -10,7 +10,7 @@ Also: Schaefer-200 + Tian S1 parcels (216), the Rebollo et al. (2018) gastric ne
 (NeuroVault image 51888) and the 32 CONN network masks.
 Outputs: atlas/*_3mm.nii.gz and label files
 
-Usage: python 03_build_atlas.py
+Usage: python 01_build_atlas.py
 """
 import os
 
